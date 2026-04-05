@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NexShield — Cyber Security</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Exo+2:wght@100;300;400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cyan: #00f5ff;
+    --green: #00ff88;
+    --red: #ff2d55;
+    --dark: #020b14;
+    --darker: #010810;
+    --panel: rgba(0,245,255,0.04);
+    --border: rgba(0,245,255,0.18);
+    --glow: 0 0 20px rgba(0,245,255,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--dark);
+    color: #cce8f0;
+    font-family: 'Exo 2', sans-serif;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── CANVAS BACKGROUND ── */
+  #matrix-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    opacity: 0.07;
+    pointer-events: none;
+  }
+
+  /* Scan-line overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 3rem;
+    background: rgba(2,11,20,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    transition: all 0.4s ease;
+  }
+
+  .logo {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.4rem;
+    color: var(--cyan);
+    letter-spacing: 3px;
+    text-shadow: var(--glow);
+    text-decoration: none;
+  }
+
+  .logo span { color: var(--green); }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: #7bb8c8;
+    text-decoration: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.3s, text-shadow 0.3s;
+    position: relative;
+  }
+
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 0; height: 1px;
+    background: var(--cyan);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 8px var(--cyan);
+  }
+
+  .nav-links a:hover { color: var(--cyan); text-shadow: var(--glow); }
+  .nav-links a:hover::after { width: 100%; }
+
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 0.5rem 1.4rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    cursor: crosshair;
+    transition: background 0.3s, box-shadow 0.3s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+
+  .nav-cta:hover {
+    background: rgba(0,245,255,0.12);
+    box-shadow: var(--glow), inset 0 0 20px rgba(0,245,255,0.06);
+  }
+
+  /* ── SECTIONS ── */
+  section { position: relative; z-index: 2; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6rem 2rem 4rem;
+    overflow: hidden;
+  }
+
+  .hero-inner { max-width: 900px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--green);
+    padding: 0.3rem 1rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--green);
+    letter-spacing: 2px;
+    margin-bottom: 2rem;
+    animation: fadeSlideDown 0.8s ease both;
+    clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 1.5s infinite;
+  }
+
+  .hero-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    margin-bottom: 1.5rem;
+    animation: fadeSlideUp 0.9s 0.2s ease both;
+  }
+
+  .hero-title .line1 { color: #e0f4ff; display: block; }
+
+  .hero-title .line2 {
+    display: block;
+    color: var(--cyan);
+    text-shadow: var(--glow);
+    position: relative;
+  }
+
+  .hero-title .line2::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 50%; transform: translateX(-50%);
+    width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    box-shadow: 0 0 12px var(--cyan);
+  }
+
+  .hero-sub {
+    font-weight: 300;
+    font-size: 1.1rem;
+    color: #7bb8c8;
+    max-width: 600px;
+    margin: 2rem auto;
+    line-height: 1.8;
+    letter-spacing: 0.5px;
+    animation: fadeSlideUp 0.9s 0.4s ease both;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2.5rem;
+    animation: fadeSlideUp 0.9s 0.6s ease both;
+  }
+
+  .btn-primary {
+    background: var(--cyan);
+    color: var(--darker);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0.85rem 2.2rem;
+    border: none;
+    cursor: crosshair;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+    transition: box-shadow 0.3s, transform 0.2s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary:hover {
+    box-shadow: 0 0 30px rgba(0,245,255,0.6);
+    transform: translateY(-2px);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: #cce8f0;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0.85rem 2.2rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    cursor: crosshair;
+    transition: border-color 0.3s, color 0.3s;
+    text-decoration: none;
+    display: inline-block;
+    clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+  }
+
+  .btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  /* Floating hexagons */
+  .hex-grid {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .hex {
+    position: absolute;
+    width: 80px; height: 80px;
+    border: 1px solid rgba(0,245,255,0.1);
+    clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+    animation: floatHex linear infinite;
+  }
+
+  .hex:nth-child(1) { left: 8%; top: 20%; animation-duration: 18s; animation-delay: 0s; opacity: 0.5; }
+  .hex:nth-child(2) { left: 85%; top: 15%; animation-duration: 22s; animation-delay: -4s; width: 50px; height: 50px; opacity: 0.3; }
+  .hex:nth-child(3) { left: 75%; top: 65%; animation-duration: 20s; animation-delay: -8s; width: 100px; height: 100px; opacity: 0.2; }
+  .hex:nth-child(4) { left: 15%; top: 70%; animation-duration: 25s; animation-delay: -12s; width: 60px; height: 60px; opacity: 0.4; }
+  .hex:nth-child(5) { left: 50%; top: 10%; animation-duration: 16s; animation-delay: -6s; width: 40px; height: 40px; opacity: 0.3; }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,245,255,0.025);
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .stat-item.visible { opacity: 1; transform: translateY(0); }
+
+  .stat-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 2rem;
+    color: var(--cyan);
+    text-shadow: var(--glow);
+    display: block;
+  }
+
+  .stat-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #5a8a99;
+  }
+
+  /* ── SERVICES ── */
+  #services {
+    padding: 6rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .section-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--green);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 700;
+    color: #e0f4ff;
+    line-height: 1.2;
+  }
+
+  .section-title em {
+    font-style: normal;
+    color: var(--cyan);
+    text-shadow: var(--glow);
+  }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .service-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: border-color 0.4s, transform 0.3s;
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.4s;
+  }
+
+  .service-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,245,255,0.05), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .service-card:hover { border-color: var(--cyan); }
+  .service-card:hover::before { left: 100%; }
+
+  /* corner accent */
+  .service-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 20px; height: 20px;
+    border-top: 1px solid var(--cyan);
+    border-right: 1px solid var(--cyan);
+  }
+
+  .card-icon {
+    width: 48px; height: 48px;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card-icon svg { width: 100%; height: 100%; }
+
+  .card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e0f4ff;
+    letter-spacing: 1px;
+    margin-bottom: 0.8rem;
+  }
+
+  .card-desc {
+    font-size: 0.88rem;
+    color: #5a8a99;
+    line-height: 1.75;
+  }
+
+  .card-tag {
+    display: inline-block;
+    margin-top: 1.2rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--cyan);
+    letter-spacing: 1px;
+    border-left: 2px solid var(--cyan);
+    padding-left: 0.5rem;
+  }
+
+  /* ── THREAT MONITOR ── */
+  #monitor {
+    padding: 6rem 3rem;
+    background: rgba(0,0,0,0.3);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .monitor-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+
+  @media(max-width:768px){
+    .monitor-inner { grid-template-columns: 1fr; }
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .stats-bar { gap: 2rem; padding: 1.5rem 1.5rem; }
+    #services, #monitor, #pricing { padding: 4rem 1.5rem; }
+  }
+
+  .terminal {
+    background: rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--green);
+    padding: 1.5rem;
+    line-height: 2;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 0 100%);
+    min-height: 280px;
+  }
+
+  .terminal-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 1rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .t-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .t-dot:nth-child(1) { background: #ff2d55; }
+  .t-dot:nth-child(2) { background: #ffd600; }
+  .t-dot:nth-child(3) { background: #00ff88; }
+
+  .terminal-line { display: block; }
+  .terminal-line.warn { color: #ffcc00; }
+  .terminal-line.danger { color: var(--red); }
+  .terminal-line.muted { color: #2a5560; }
+  .terminal-line.info { color: var(--cyan); }
+
+  .cursor-blink {
+    display: inline-block;
+    width: 8px; height: 1em;
+    background: var(--green);
+    vertical-align: text-bottom;
+    animation: blink 1s infinite;
+  }
+
+  .monitor-text .section-title { text-align: left; margin-bottom: 1.2rem; }
+  .monitor-text .section-tag { text-align: left; }
+
+  .feature-list {
+    list-style: none;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: #7bb8c8;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+
+  .feature-list li.visible { opacity: 1; transform: translateX(0); }
+
+  .feat-icon {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    color: var(--cyan);
+  }
+
+  /* ── PRICING ── */
+  #pricing {
+    padding: 6rem 3rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .price-card {
+    border: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .price-card.visible { opacity: 1; transform: scale(1); }
+
+  .price-card.featured {
+    border-color: var(--cyan);
+    background: rgba(0,245,255,0.04);
+  }
+
+  .price-card.featured::after {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: -1px; left: 50%; transform: translateX(-50%);
+    background: var(--cyan);
+    color: var(--darker);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 2px;
+    padding: 3px 12px;
+  }
+
+  .plan-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 1rem;
+  }
+
+  .plan-price {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #e0f4ff;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .plan-price sup {
+    font-size: 1.2rem;
+    vertical-align: top;
+    margin-top: 0.5rem;
+    display: inline-block;
+    color: var(--cyan);
+  }
+
+  .plan-period {
+    font-size: 0.8rem;
+    color: #5a8a99;
+    margin-bottom: 2rem;
+  }
+
+  .plan-features {
+    list-style: none;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+
+  .plan-features li {
+    font-size: 0.87rem;
+    color: #7bb8c8;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .plan-features li::before {
+    content: '▹';
+    color: var(--cyan);
+    font-size: 0.8rem;
+  }
+
+  .btn-plan {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: #cce8f0;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    padding: 0.85rem;
+    cursor: crosshair;
+    transition: all 0.3s;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+
+  .price-card.featured .btn-plan {
+    background: var(--cyan);
+    border-color: var(--cyan);
+    color: var(--darker);
+  }
+
+  .btn-plan:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    box-shadow: var(--glow);
+  }
+
+  .price-card.featured .btn-plan:hover {
+    color: var(--darker);
+    box-shadow: 0 0 30px rgba(0,245,255,0.5);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem;
+    text-align: center;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: #2a5560;
+    letter-spacing: 1px;
+  }
+
+  footer .f-logo {
+    font-size: 1.2rem;
+    color: var(--cyan);
+    text-shadow: var(--glow);
+    letter-spacing: 4px;
+    display: block;
+    margin-bottom: 1rem;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes floatHex {
+    0%   { transform: translateY(0) rotate(0deg); }
+    50%  { transform: translateY(-40px) rotate(180deg); }
+    100% { transform: translateY(0) rotate(360deg); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--green); }
+    50%       { opacity: 0.4; box-shadow: 0 0 12px var(--green); }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  @keyframes scanline {
+    from { top: -4px; }
+    to   { top: 100%; }
+  }
+
+  /* Moving scan highlight */
+  .scan-highlight {
+    position: fixed;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,245,255,0.15), transparent);
+    pointer-events: none;
+    z-index: 3;
+    animation: scanline 5s linear infinite;
+  }
+
+  /* Glitch effect on logo hover */
+  .logo:hover {
+    animation: glitch 0.4s steps(2) 1;
+  }
+
+  @keyframes glitch {
+    0%   { text-shadow: 0 0 20px rgba(0,245,255,0.4); clip-path: none; }
+    20%  { text-shadow: 3px 0 0 rgba(255,0,80,0.6), -3px 0 0 rgba(0,255,136,0.6); clip-path: inset(10% 0 80% 0); }
+    40%  { text-shadow: -3px 0 0 rgba(255,0,80,0.6), 3px 0 0 rgba(0,255,136,0.6); clip-path: inset(60% 0 20% 0); }
+    60%  { text-shadow: 2px 0 0 rgba(255,0,80,0.4); clip-path: inset(40% 0 50% 0); }
+    80%  { clip-path: none; }
+    100% { text-shadow: var(--glow); }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="matrix-canvas"></canvas>
+<div class="scan-highlight"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">NEX<span>SHIELD</span></a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#monitor">Monitoring</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <button class="nav-cta">Get Protected</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hex-grid">
+    <div class="hex"></div>
+    <div class="hex"></div>
+    <div class="hex"></div>
+    <div class="hex"></div>
+    <div class="hex"></div>
+  </div>
+  <div class="hero-inner">
+    <div class="badge">
+      <div class="badge-dot"></div>
+      SYSTEM STATUS: ALL DEFENSES ONLINE
+    </div>
+    <h1 class="hero-title">
+      <span class="line1">Next-Generation</span>
+      <span class="line2">Cyber Security</span>
+    </h1>
+    <p class="hero-sub">
+      AI-powered threat detection and zero-trust architecture that adapts in real-time. 
+      Protect your digital infrastructure before threats materialize.
+    </p>
+    <div class="hero-buttons">
+      <a href="#services" class="btn-primary">Explore Arsenal</a>
+      <a href="#monitor" class="btn-outline">Live Threat Feed</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-num" data-target="99.9">0</span>
+    <span class="stat-label">% Uptime SLA</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num" data-target="4800">0</span>
+    <span class="stat-label">Threats Neutralized Daily</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num" data-target="2300">0</span>
+    <span class="stat-label">Global Clients</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num" data-target="0.3">0</span>
+    <span class="stat-label">ms Avg Response Time</span>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="section-header">
+    <span class="section-tag">// defense_systems.exe</span>
+    <h2 class="section-title">Security <em>Arsenal</em></h2>
+  </div>
+  <div class="services-grid">
+
+    <div class="service-card">
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="24,2 44,12 44,28 24,46 4,28 4,12" stroke="#00f5ff" stroke-width="1.5" fill="none" opacity="0.4"/>
+          <polygon points="24,8 38,16 38,26 24,40 10,26 10,16" stroke="#00f5ff" stroke-width="1" fill="rgba(0,245,255,0.05)"/>
+          <circle cx="24" cy="24" r="5" fill="#00f5ff" opacity="0.8"/>
+          <line x1="24" y1="14" x2="24" y2="19" stroke="#00f5ff" stroke-width="1"/>
+          <line x1="24" y1="29" x2="24" y2="34" stroke="#00f5ff" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="card-title">Threat Intelligence</div>
+      <div class="card-desc">Real-time AI analysis of global attack vectors with predictive modeling. Our neural networks scan 14 billion data points per second.</div>
+      <span class="card-tag">AI_POWERED // REAL-TIME</span>
+    </div>
+
+    <div class="service-card">
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="10" width="36" height="28" rx="2" stroke="#00f5ff" stroke-width="1.5" fill="rgba(0,245,255,0.04)"/>
+          <path d="M6 18h36" stroke="#00f5ff" stroke-width="1" opacity="0.5"/>
+          <circle cx="12" cy="14" r="2" fill="#ff2d55"/>
+          <circle cx="19" cy="14" r="2" fill="#ffd600"/>
+          <circle cx="26" cy="14" r="2" fill="#00ff88"/>
+          <path d="M12 26l4 4 8-8" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M32 24h6M32 28h4M32 32h6" stroke="#00f5ff" stroke-width="1" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="card-title">Network Firewall</div>
+      <div class="card-desc">Next-gen deep packet inspection with behavioral analytics. Adaptive rule engines that learn and evolve with your traffic patterns.</div>
+      <span class="card-tag">DEEP_PACKET // ADAPTIVE</span>
+    </div>
+
+    <div class="service-card">
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="14" y="6" width="20" height="26" rx="2" stroke="#00f5ff" stroke-width="1.5" fill="rgba(0,245,255,0.04)"/>
+          <rect x="18" y="10" width="12" height="2" rx="1" fill="#00f5ff" opacity="0.5"/>
+          <rect x="18" y="14" width="8" height="2" rx="1" fill="#00f5ff" opacity="0.3"/>
+          <path d="M20 36v6M28 36v6M16 42h16" stroke="#00f5ff" stroke-width="1.5" opacity="0.6"/>
+          <circle cx="36" cy="34" r="8" fill="rgba(0,255,136,0.1)" stroke="#00ff88" stroke-width="1.5"/>
+          <path d="M32 34l3 3 5-5" stroke="#00ff88" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="card-title">Endpoint Defense</div>
+      <div class="card-desc">Zero-trust endpoint verification across all devices. Continuous authentication and anomaly detection at the hardware level.</div>
+      <span class="card-tag">ZERO_TRUST // EDR</span>
+    </div>
+
+    <div class="service-card">
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="18" stroke="#00f5ff" stroke-width="1.5" fill="rgba(0,245,255,0.03)" stroke-dasharray="4 2"/>
+          <circle cx="24" cy="24" r="10" stroke="#00f5ff" stroke-width="1" fill="rgba(0,245,255,0.05)"/>
+          <circle cx="24" cy="24" r="3" fill="#00f5ff"/>
+          <line x1="24" y1="6" x2="24" y2="14" stroke="#00f5ff" stroke-width="1.5"/>
+          <line x1="42" y1="24" x2="34" y2="24" stroke="#00f5ff" stroke-width="1.5"/>
+          <line x1="24" y1="42" x2="24" y2="34" stroke="#00f5ff" stroke-width="1.5"/>
+          <line x1="6" y1="24" x2="14" y2="24" stroke="#00f5ff" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="card-title">SIEM & SOC</div>
+      <div class="card-desc">24/7 Security Operations Center with automated incident response. Correlate events across thousands of log sources in milliseconds.</div>
+      <span class="card-tag">24/7_MONITORING // SIEM</span>
+    </div>
+
+    <div class="service-card">
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="32" height="32" rx="2" stroke="#ff2d55" stroke-width="1.5" fill="rgba(255,45,85,0.05)"/>
+          <path d="M16 24h16M24 16l-8 8 8 8" stroke="#ff2d55" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="36" cy="12" r="6" fill="rgba(255,45,85,0.15)" stroke="#ff2d55" stroke-width="1.5"/>
+          <path d="M33 12h6M36 9v6" stroke="#ff2d55" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="card-title">Penetration Testing</div>
+      <div class="card-desc">Ethical red-team operations simulating real-world attack chains. Identify vulnerabilities before adversaries do with continuous scanning.</div>
+      <span class="card-tag">RED_TEAM // PENTEST</span>
+    </div>
+
+    <div class="service-card">
+      <div class="card-icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4L6 14v14c0 8.4 7.7 16.3 18 19 10.3-2.7 18-10.6 18-19V14L24 4z" stroke="#00ff88" stroke-width="1.5" fill="rgba(0,255,136,0.05)"/>
+          <path d="M16 24l6 6 10-10" stroke="#00ff88" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="card-title">Cloud Security</div>
+      <div class="card-desc">Multi-cloud posture management with automated compliance enforcement. Secure AWS, Azure, and GCP workloads under a single pane of glass.</div>
+      <span class="card-tag">CSPM // MULTI-CLOUD</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- THREAT MONITOR -->
+<section id="monitor">
+  <div class="monitor-inner">
+    <div class="terminal" id="terminal">
+      <div class="terminal-bar">
+        <div class="t-dot"></div>
+        <div class="t-dot"></div>
+        <div class="t-dot"></div>
+      </div>
+      <span class="terminal-line muted">// nexshield threat_monitor v4.2.1</span>
+      <span class="terminal-line info" id="t1"></span>
+      <span class="terminal-line" id="t2"></span>
+      <span class="terminal-line warn" id="t3"></span>
+      <span class="terminal-line danger" id="t4"></span>
+      <span class="terminal-line" id="t5"></span>
+      <span class="terminal-line info" id="t6"></span>
+      <span class="terminal-line warn" id="t7"></span>
+      <span class="terminal-line" id="t8"></span>
+      <span class="terminal-line danger" id="t9"></span>
+      <span class="terminal-line" id="t10"></span>
+      <span class="terminal-line muted">&gt; <span class="cursor-blink"></span></span>
+    </div>
+    <div class="monitor-text">
+      <span class="section-tag">// active_defense.sys</span>
+      <h2 class="section-title">Real-Time <em>Threat</em> Monitoring</h2>
+      <ul class="feature-list">
+        <li>
+          <svg class="feat-icon" viewBox="0 0 18 18" fill="none"><polyline points="1,9 5,5 9,13 13,7 17,9" stroke="currentColor" stroke-width="1.5"/></svg>
+          Live threat intelligence from 200+ global sensors
+        </li>
+        <li>
+          <svg class="feat-icon" viewBox="0 0 18 18" fill="none"><polyline points="1,9 5,5 9,13 13,7 17,9" stroke="currentColor" stroke-width="1.5"/></svg>
+          Automated incident triage in under 300 milliseconds
+        </li>
+        <li>
+          <svg class="feat-icon" viewBox="0 0 18 18" fill="none"><polyline points="1,9 5,5 9,13 13,7 17,9" stroke="currentColor" stroke-width="1.5"/></svg>
+          MITRE ATT&CK framework mapping on every alert
+        </li>
+        <li>
+          <svg class="feat-icon" viewBox="0 0 18 18" fill="none"><polyline points="1,9 5,5 9,13 13,7 17,9" stroke="currentColor" stroke-width="1.5"/></svg>
+          Forensic-grade packet captures and replay analysis
+        </li>
+        <li>
+          <svg class="feat-icon" viewBox="0 0 18 18" fill="none"><polyline points="1,9 5,5 9,13 13,7 17,9" stroke="currentColor" stroke-width="1.5"/></svg>
+          Integration with 300+ third-party security tools
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-header">
+    <span class="section-tag">// access_tiers.conf</span>
+    <h2 class="section-title">Choose Your <em>Defense Level</em></h2>
+  </div>
+  <div class="pricing-grid">
+
+    <div class="price-card">
+      <div class="plan-name">Recon</div>
+      <div class="plan-price"><sup>$</sup>49</div>
+      <div class="plan-period">/ month per endpoint</div>
+      <ul class="plan-features">
+        <li>Network Firewall (Basic)</li>
+        <li>Endpoint Protection</li>
+        <li>Email Security</li>
+        <li>8x5 SOC Support</li>
+        <li>Monthly Reports</li>
+      </ul>
+      <button class="btn-plan">Initiate Protocol</button>
+    </div>
+
+    <div class="price-card featured">
+      <div class="plan-name">Operative</div>
+      <div class="plan-price"><sup>$</sup>149</div>
+      <div class="plan-period">/ month per endpoint</div>
+      <ul class="plan-features">
+        <li>Everything in Recon</li>
+        <li>AI Threat Intelligence</li>
+        <li>SIEM Integration</li>
+        <li>24/7 SOC Support</li>
+        <li>Incident Response</li>
+        <li>Quarterly Pentest</li>
+      </ul>
+      <button class="btn-plan">Deploy Now</button>
+    </div>
+
+    <div class="price-card">
+      <div class="plan-name">Apex</div>
+      <div class="plan-price"><sup>$</sup>399</div>
+      <div class="plan-period">/ month per endpoint</div>
+      <ul class="plan-features">
+        <li>Everything in Operative</li>
+        <li>Dedicated Security Team</li>
+        <li>Custom Threat Modeling</li>
+        <li>Red Team Operations</li>
+        <li>Compliance Management</li>
+        <li>SLA: 15-min response</li>
+      </ul>
+      <button class="btn-plan">Engage Elite</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="f-logo">NEX<span style="color:#00ff88">SHIELD</span></span>
+  <span>© 2026 NexShield Security Corp. All rights reserved.</span><br>
+  <span style="margin-top:0.5rem;display:block">NEXSHIELD.IO &nbsp;|&nbsp; SECURITY@NEXSHIELD.IO &nbsp;|&nbsp; +1 (888) 0-NXSHLD</span>
+</footer>
+
+<script>
+// ── MATRIX RAIN ──
+const canvas = document.getElementById('matrix-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  initMatrix();
+});
+
+const chars = '01アイウエオカキクケコサシスセソABCDEFGHIJKLMN<>{}[]|/\\'.split('');
+let cols, drops;
+
+function initMatrix() {
+  const fs = 14;
+  cols = Math.floor(canvas.width / fs);
+  drops = Array(cols).fill(1);
+}
+initMatrix();
+
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(2,11,20,0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00f5ff';
+  ctx.font = '14px Share Tech Mono, monospace';
+  drops.forEach((y, i) => {
+    const ch = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(ch, i * 14, y * 14);
+    if (y * 14 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  });
+}
+setInterval(drawMatrix, 50);
+
+// ── SCROLL ANIMATIONS ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      if (e.target.classList.contains('stat-item')) {
+        const el = e.target.querySelector('.stat-num');
+        animateCount(el);
+      }
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.service-card, .stat-item, .feature-list li, .price-card').forEach(el => observer.observe(el));
+
+// Stagger cards
+document.querySelectorAll('.service-card').forEach((c, i) => c.style.transitionDelay = `${i * 0.08}s`);
+document.querySelectorAll('.feature-list li').forEach((li, i) => li.style.transitionDelay = `${i * 0.1}s`);
+document.querySelectorAll('.price-card').forEach((c, i) => c.style.transitionDelay = `${i * 0.1}s`);
+document.querySelectorAll('.stat-item').forEach((c, i) => c.style.transitionDelay = `${i * 0.08}s`);
+
+// ── COUNTER ANIMATION ──
+function animateCount(el) {
+  const target = parseFloat(el.dataset.target);
+  const dec = target % 1 !== 0 ? 1 : 0;
+  const dur = 1800, step = 16;
+  const inc = target / (dur / step);
+  let cur = 0;
+  const t = setInterval(() => {
+    cur = Math.min(cur + inc, target);
+    el.textContent = cur.toFixed(dec);
+    if (cur >= target) clearInterval(t);
+  }, step);
+}
+
+// ── TERMINAL ANIMATION ──
+const lines = [
+  { id: 't1', text: '[INFO] Scanning perimeter... 14,839 nodes', delay: 300 },
+  { id: 't2', text: '[OK]   Firewall rules verified: 2,441 active', delay: 900 },
+  { id: 't3', text: '[WARN] Unusual traffic: 192.168.42.17 → port 8443', delay: 1500 },
+  { id: 't4', text: '[CRIT] Brute-force attempt detected — src: 45.9.20.14', delay: 2200 },
+  { id: 't5', text: '[AUTO] Blocking 45.9.20.14 — rule ID #7721 deployed', delay: 2800 },
+  { id: 't6', text: '[INFO] AI model confidence: 98.7% — threat confirmed', delay: 3400 },
+  { id: 't7', text: '[WARN] SSL cert expiry in 3 days: api.internal.corp', delay: 4200 },
+  { id: 't8', text: '[OK]   Endpoint scan complete — 0 anomalies', delay: 5000 },
+  { id: 't9', text: '[CRIT] Ransomware signature match — quarantining proc', delay: 6000 },
+  { id: 't10', text: '[AUTO] Isolation complete. Incident #INS-2847 opened', delay: 6800 },
+];
+
+function typeText(el, text, speed = 30) {
+  let i = 0;
+  const t = setInterval(() => {
+    el.textContent += text[i++];
+    if (i >= text.length) clearInterval(t);
+  }, speed);
+}
+
+lines.forEach(({ id, text, delay }) => {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) typeText(el, text);
+  }, delay);
+});
+
+// Cycle terminal after done
+setTimeout(() => {
+  const allIds = lines.map(l => l.id);
+  setInterval(() => {
+    const randomLine = lines[Math.floor(Math.random() * lines.length)];
+    const el = document.getElementById(randomLine.id);
+    if (el) { el.textContent = ''; typeText(el, randomLine.text); }
+  }, 4000);
+}, 8000);
+</script>
+</body>
+</html>
